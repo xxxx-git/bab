@@ -1,5 +1,5 @@
-using System;
 using Xunit;
+using bab_webapi.Controllers;
 
 namespace bab_test
 {
@@ -9,6 +9,15 @@ namespace bab_test
         public void Test1()
         {
             Assert.Equal(1,1);
+        }
+
+        [Fact]
+        public void GetValuesFromValuesController_ShouldReturnValues()
+        {
+            var controller = new ValuesController();
+            
+            var values = controller.Get();
+            Assert.Equal(values.Value, new string[] { "value1", "value2"});
         }
     }
 }
