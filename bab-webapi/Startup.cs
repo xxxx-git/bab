@@ -25,7 +25,9 @@ namespace bab_webapi
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
+            IoCMapping(services);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -43,6 +45,11 @@ namespace bab_webapi
 
             app.UseHttpsRedirection();
             app.UseMvc();
+        }
+
+        private void IoCMapping(IServiceCollection container) 
+        {
+            // container.AddScoped<>();
         }
     }
 }
