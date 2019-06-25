@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>netcoreapp2.2</TargetFramework>
-    <RootNamespace>bab_test</RootNamespace>
+    <RootNamespace>test</RootNamespace>
     <IsPackable>false</IsPackable>
   </PropertyGroup>
   <ItemGroup>
@@ -12,6 +12,6 @@
     <PackageReference Include="Unity.NetCore" Version="4.0.3" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\bab-webapi\bab-webapi.csproj" />
+    <ProjectReference Include="..\service\service.csproj" />
   </ItemGroup>
 </Project>
