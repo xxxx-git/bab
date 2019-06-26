@@ -10,8 +10,9 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Shared.Config;
 
-namespace bab_webapi
+namespace bab
 {
     public class Startup
     {
@@ -25,7 +26,11 @@ namespace bab_webapi
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            
+            // services.AddTransient<IAppSettings, AppSettings>();
+            // var x = (IAppSettings)services.BuildServiceProvider().GetService(typeof(IAppSettings));
+            var section = Configuration.GetSection("JWT");
+            services.Configure<JWTSettings>(section);
+
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
             IoCMapping(services);
         }
