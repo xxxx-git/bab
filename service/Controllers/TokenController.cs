@@ -11,19 +11,19 @@ namespace bab.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class AuthController : ControllerBase
+    public class TokenController : ControllerBase
     {
-        private IAuthService _authService;
-        public AuthController(IAuthService authService)
+        private ITokenService _tokenService;
+        public TokenController(ITokenService tokenService)
         {
-            _authService = authService;
+            _tokenService = tokenService;
         }
 
-        [AllowAnonymous]
-        [HttpPost("authenticate")]
-        public IActionResult Authenticate([FromBody]IUser userParam)
+        
+        [HttpPost("generateToken")]
+        public IActionResult GenerateToken([FromBody]AuthorizedUser userParam)
         {
-            var user = _authService.Authenticate(userParam);
+            var user = _tokenService.GenerateToken(userParam);
 
             if (user == null)
                 return BadRequest(new { message = "Username or password is incorrect" });
@@ -37,5 +37,13 @@ namespace bab.Controllers
         //     var users =  _userService.GetAll();
         //     return Ok(users);
         // }
+    }
+
+    public class AuthorizedUser : IUser
+    {
+        public string Id { get;set; }
+        public string DisplayName { get; set;  }
+        public string Hierarchy { get; set; }
+        public string Token { get; set; }
     }
 }

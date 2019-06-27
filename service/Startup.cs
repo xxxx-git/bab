@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using bab.Services;
+using bab.Shared;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
@@ -30,7 +32,6 @@ namespace bab
             // var x = (IAppSettings)services.BuildServiceProvider().GetService(typeof(IAppSettings));
             var section = Configuration.GetSection("JWT");
             services.Configure<JWTSettings>(section);
-
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
             IoCMapping(services);
         }
@@ -54,7 +55,7 @@ namespace bab
 
         private void IoCMapping(IServiceCollection container) 
         {
-            // container.AddScoped<>();
+            container.AddScoped<ITokenService, TokenService>();
         }
     }
 }
