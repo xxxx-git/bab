@@ -2,7 +2,7 @@
 
 ### Init
 
-#### Step 1 - Dependencies installlation
+#### Step 1 - Dependencies installation
 ```
 yarn
 ```

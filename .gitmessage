@@ -1,4 +1,5 @@
-<type>(<scope>): <title>
+<type>[optional scope]: <description>
 
-<body>
-<footer>
+[optional body]
+
+[optional footer]
