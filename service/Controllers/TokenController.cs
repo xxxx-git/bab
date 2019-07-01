@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
-using bab.Shared;
+using Shared;
 
 namespace bab.Controllers
 {
@@ -13,30 +13,30 @@ namespace bab.Controllers
     [Route("api/[controller]")]
     public class TokenController : ControllerBase
     {
-        private ITokenService _tokenService;
-        public TokenController(ITokenService tokenService)
+        private ISecurityTokenService _tokenService;
+        public TokenController(ISecurityTokenService tokenService)
         {
             _tokenService = tokenService;
         }
 
-        
+        [AllowAnonymous]
         [HttpPost("generateToken")]
         public IActionResult GenerateToken([FromBody]AuthorizedUser userParam)
         {
-            var user = _tokenService.GenerateToken(userParam);
+            var token = _tokenService.GenerateToken(userParam);
 
-            if (user == null)
+            if (token == null)
                 return BadRequest(new { message = "Username or password is incorrect" });
 
-            return Ok(user);
+            return Ok(token);
         }
 
-        // [HttpGet]
-        // public IActionResult GetAll()
-        // {
-        //     var users =  _userService.GetAll();
-        //     return Ok(users);
-        // }
+        [Authorize]
+        [HttpGet("a")]
+        public IActionResult value()
+        {
+            return Ok("pdony");
+        }
     }
 
     public class AuthorizedUser : IUser

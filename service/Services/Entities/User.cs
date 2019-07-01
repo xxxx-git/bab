@@ -1,4 +1,4 @@
-using bab.Shared;
+using Shared;
 
 internal class User : IUser
     {
