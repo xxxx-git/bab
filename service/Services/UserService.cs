@@ -1,8 +1,7 @@
 using System.Collections.Generic;
-using System.Linq;
-using bab.Shared;
+using Shared;
 
-namespace bab.Services {
+namespace Services {
     public class UserService : IUserService
     {
         private IList<IUser> _users = new List<IUser>

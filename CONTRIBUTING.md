@@ -1,6 +1,6 @@
 ## Contributing
 
-### Init
+### Initial your project
 
 #### Step 1 - Dependencies installation
 ```

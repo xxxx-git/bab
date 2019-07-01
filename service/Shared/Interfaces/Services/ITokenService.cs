@@ -1,8 +1,8 @@
 using System.Collections.Generic;
 
-namespace bab.Shared {
-    public interface ITokenService
+namespace Shared {
+    public interface ISecurityTokenService
     {
-        IUser GenerateToken(IUser user);
+        string GenerateToken(IUser user);
     }
 }

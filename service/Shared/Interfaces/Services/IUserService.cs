@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace bab.Shared {
+namespace Shared {
     public interface IUserService
     {
         IEnumerable<IUser> GetAll();

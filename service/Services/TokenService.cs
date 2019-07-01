@@ -1,67 +1,78 @@
-using bab.Shared;
-using Microsoft.Extensions.Options;
-using Microsoft.IdentityModel.Tokens;
+using Shared;
 using Shared.Config;
+using Microsoft.IdentityModel.Tokens;
 using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 
-namespace bab.Services {
-    public class TokenService : ITokenService
+namespace Services {
+    public class SynTokenService : ISecurityTokenService
     {
-        private readonly JWTSettings _jwtSettings;
+        private readonly ITokenSettings _tokenSettings;
 
-        public TokenService(IOptions<JWTSettings> jwtSettings)
+        public SynTokenService(ITokenSettings tokenSettings)
         {
-            _jwtSettings = jwtSettings.Value;
+            _tokenSettings = tokenSettings;
         }
 
-        public IUser GenerateToken(IUser authrizedUser)
+        public string GenerateToken(IUser user)
         {
-            var header = new JwtHeader();
-            header.Add("typ", "jwt");
-            header.Add("alg", "HS256");
+            var token = GetToken(user);
             
-            var x = header.Alg;
 
-            var payload = new JwtPayload();
+            return token;
+        }
 
-            
+        private ClaimsIdentity GetClaims(IUser user) 
+        {
             var claims = new[]
             {
-                new Claim(JwtRegisteredClaimNames.Sub, authrizedUser.Id),
-                new Claim(JwtRegisteredClaimNames.Sub, authrizedUser.Hierarchy),
-                new Claim(JwtRegisteredClaimNames.Sub, authrizedUser.DisplayName),
-                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+                new Claim(JwtRegisteredClaimNames.Iss, "Syn"),
+                new Claim(JwtRegisteredClaimNames.Aud, "User"),
+                new Claim(JwtRegisteredClaimNames.Sub, "token subject"),
+                new Claim(JwtRegisteredClaimNames.Exp, DateTime.UtcNow.AddMinutes(5).ToString()),
+                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+                new Claim("userId", user.Id),
+                new Claim("userHierarchy", user.Hierarchy),
+                new Claim("userDisplayName", user.DisplayName)
             };
 
-            var singingKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("bababababababaababbabababaab"));
+            var payload = new ClaimsIdentity(claims);
 
-            var token = new JwtSecurityToken(
-                expires: DateTime.UtcNow.AddMinutes(1),
-                claims: claims,
-                signingCredentials: new SigningCredentials(singingKey, SecurityAlgorithms.HmacSha256)
-            );
-            return null;
+            return payload;
+        }
 
-            // authentication successful so generate jwt token
-            // var tokenHandler = new JwtSecurityTokenHandler();
-            // var key = Encoding.ASCII.GetBytes(_jwtSettings.Secret);
-            // var tokenDescriptor = new SecurityTokenDescriptor
-            // {
-            //     Subject = new ClaimsIdentity(new Claim[] 
-            //     {
-            //         new Claim(ClaimTypes.Name, authrizedUser.Id.ToString())
-            //     }),
-            //     Expires = DateTime.UtcNow.AddDays(7),
-            //     SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
-            // };
-            
-            // var token = tokenHandler.CreateToken(tokenDescriptor);
-            // authrizedUser.Token = tokenHandler.WriteToken(token);
+        private SigningCredentials GetSignature() 
+        {
+            var encodedBytes = Encoding.UTF8.GetBytes(_tokenSettings.Secret);
+            var encodedSecret = Convert.ToBase64String(encodedBytes);
+            var secret = new SigningCredentials(new SymmetricSecurityKey(encodedBytes), SecurityAlgorithms.HmacSha256);
+            return secret;
+        }
 
-            // return authrizedUser;
+        private string GetToken(IUser user) 
+        {
+            var claims = GetClaims(user);
+            var signature = GetSignature();
+             
+            var tokenDescriptor = new SecurityTokenDescriptor()
+            {
+                // EncryptingCredentials = new EncryptingCredentials(secret.Key, SecurityAlgorithms.HmacSha256, SecurityAlgorithms.RsaSha256),
+                SigningCredentials = signature,
+                Subject = claims,
+            };
+
+            // Handle token descriptor by JWT
+            var tokenHandler = new JwtSecurityTokenHandler();
+
+            var tokenObject = tokenHandler.CreateToken(tokenDescriptor);
+            tokenObject.SigningKey = signature.Key;
+
+            // Exract token
+            var token = tokenHandler.WriteToken(tokenObject);
+
+            return token;
         }
     }
 }
