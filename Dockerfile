@@ -21,6 +21,7 @@ ENTRYPOINT ["dotnet", "vstest", "test.dll"]
 
 
 
+
 FROM mcr.microsoft.com/dotnet/core/sdk:2.2 AS build-prod
 WORKDIR /app
 
