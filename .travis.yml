@@ -8,9 +8,9 @@ jobs:
       install:
       - docker build --target test -t bab-test .
       script:
-      - docker run --rmi bab-test .
+      - docker run --rm bab-test .
     - stage: deploy
       install:
       - docker build --target build-prod -t bab .
       script:
-      - docker run --rmi bab .
+      - docker run --rm bab .
