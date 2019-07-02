@@ -55,20 +55,29 @@ namespace bab
 
         private void BabAuthentication(IServiceCollection services) 
         {
-            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-                .AddJwtBearer(options =>
-                {
-                    var signingKey = System.Text.Encoding.UTF8.GetBytes(Configuration["Authorization:Secret"]);
-                    options.RequireHttpsMetadata = false;
-                    options.SaveToken = true;
-                    options.TokenValidationParameters = new TokenValidationParameters
-                    {
-                        // ValidIssuer = Configuration["Authorization:Issuer"],
-                        ValidateIssuer = false,
-                        ValidateAudience = false,
-                        IssuerSigningKey = new SymmetricSecurityKey(signingKey)
-                    };
-                });
+            // // services.AddIdentity<AuthorizedUser, >()
+            // services.AddAuthentication(auth => {
+            //     auth.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+            //     auth.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            //     auth.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+            //     auth.DefaultSignInScheme = JwtBearerDefaults.AuthenticationScheme;
+            // })
+            // .AddCookie(options => {
+            //     // options.
+            // })
+            // .AddJwtBearer(options =>
+            // {
+            //     var signingKey = System.Text.Encoding.UTF8.GetBytes(Configuration["Authorization:Secret"]);
+            //     options.RequireHttpsMetadata = false;
+            //     // options.SaveToken = true;
+            //     options.TokenValidationParameters = new TokenValidationParameters
+            //     {
+            //         // ValidIssuer = Configuration["Authorization:Issuer"],
+            //         ValidateIssuer = false,
+            //         ValidateAudience = false,
+            //         IssuerSigningKey = new SymmetricSecurityKey(signingKey)
+            //     };
+            // });
         }
 
         private IServiceCollection BabServices(IServiceCollection container) 

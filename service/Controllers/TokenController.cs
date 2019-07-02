@@ -19,11 +19,10 @@ namespace bab.Controllers
             _tokenService = tokenService;
         }
 
-        [AllowAnonymous]
-        [HttpPost("generateToken")]
-        public IActionResult GenerateToken([FromBody]AuthorizedUser userParam)
+        [HttpPost("generate")]
+        public IActionResult GenerateToken([FromBody]dynamic userParam)
         {
-            var token = _tokenService.GenerateToken(userParam);
+            var token = _tokenService.Generate(userParam);
 
             if (token == null)
                 return BadRequest(new { message = "Username or password is incorrect" });
@@ -31,19 +30,19 @@ namespace bab.Controllers
             return Ok(token);
         }
 
-        [Authorize]
-        [HttpGet("a")]
+        [HttpGet("verify")]
+        public IActionResult Verify()
+        {
+            var token = HttpContext.Request.Headers["Authorization"];
+            var user = _tokenService.Verify(token);
+            return Ok(user);
+        }
+
+        [HttpGet("decode")]
         public IActionResult value()
         {
+            var y = HttpContext.Request;
             return Ok("pdony");
         }
-    }
-
-    public class AuthorizedUser : IUser
-    {
-        public string Id { get;set; }
-        public string DisplayName { get; set;  }
-        public string Hierarchy { get; set; }
-        public string Token { get; set; }
     }
 }
