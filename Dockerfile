@@ -15,8 +15,8 @@ RUN dotnet publish -c Release -o out
 # Build runtime image
 FROM mcr.microsoft.com/dotnet/core/aspnet:2.2 AS test
 WORKDIR /app
-COPY --from=build-test /app/out .
-RUN ["dotnet", "test"]
+COPY --from=build-test /app/test/out .
+RUN ["dotnet", "test.dll"]
 
 
 
@@ -35,5 +35,5 @@ RUN dotnet publish -c Release -o out
 # Build runtime image
 FROM mcr.microsoft.com/dotnet/core/aspnet:2.2
 WORKDIR /app
-COPY --from=build-prod /app/out .
+COPY --from=build-prod /app/service/out .
 ENTRYPOINT ["dotnet", "service.dll"]
