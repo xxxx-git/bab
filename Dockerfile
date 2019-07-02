@@ -16,7 +16,8 @@ RUN dotnet publish -c Release -o out
 FROM mcr.microsoft.com/dotnet/core/aspnet:2.2 AS test
 WORKDIR /app
 COPY --from=build-test /app/test/out .
-ENTRYPOINT ["dotnet", "vstest", "test.dll"]
+RUN dotnet vstest test.dll
+ENTRYPOINT ["dotnet", "vstest test.dll"]
 
 
 
