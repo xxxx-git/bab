@@ -11,6 +11,6 @@ jobs:
       - docker run --rmi bab-test .
     - stage: deploy
       install:
-      - docker build --target buuld-prod -t bab .
+      - docker build --target build-prod -t bab .
        script:
       - docker run --rmi bab .
