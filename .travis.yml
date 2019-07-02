@@ -5,8 +5,12 @@ services:
 jobs:
   include:
     - stage: test
-      script:
+      install:
       - docker build --target test -t bab-test .
-    - stage: deploy
       script:
+      - docker run --rmi bab-test .
+    - stage: deploy
+      install:
       - docker build --target buuld-prod -t bab .
+       script:
+      - docker run --rmi bab .
