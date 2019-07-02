@@ -5,6 +5,8 @@ using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using System.Linq;
+using System.Collections.Generic;
 
 namespace Services {
     public class SynTokenService : ISecurityTokenService
@@ -16,42 +18,38 @@ namespace Services {
             _tokenSettings = tokenSettings;
         }
 
-        public string GenerateToken(IUser user)
+        public string Generate(string user)
         {
-            var token = GetToken(user);
-            
-
+            var token = GenerateToken(user);
             return token;
         }
 
-        private ClaimsIdentity GetClaims(IUser user) 
+        public string Verify(string token)
         {
-            var claims = new[]
+            var validationParameters = new TokenValidationParameters 
             {
-                new Claim(JwtRegisteredClaimNames.Iss, "Syn"),
-                new Claim(JwtRegisteredClaimNames.Aud, "User"),
-                new Claim(JwtRegisteredClaimNames.Sub, "token subject"),
-                new Claim(JwtRegisteredClaimNames.Exp, DateTime.UtcNow.AddMinutes(5).ToString()),
-                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-                new Claim("userId", user.Id),
-                new Claim("userHierarchy", user.Hierarchy),
-                new Claim("userDisplayName", user.DisplayName)
+                ValidateIssuerSigningKey = true,
+                IssuerSigningKey = GetKey(_tokenSettings.Secret),
+                ValidateAudience = false,
+                ValidateIssuer = false
             };
 
-            var payload = new ClaimsIdentity(claims);
+            var handler = new JwtSecurityTokenHandler();
+            var principal = handler.ValidateToken(token, validationParameters, out SecurityToken validatedToken);
+            var claims = principal.Claims.ToDictionary(
+                claim => claim.Type);
+            
+            var user = claims["user"].Value;
 
-            return payload;
+            return user;
         }
 
-        private SigningCredentials GetSignature() 
+        private object ValidateToken(string token)
         {
-            var encodedBytes = Encoding.UTF8.GetBytes(_tokenSettings.Secret);
-            var encodedSecret = Convert.ToBase64String(encodedBytes);
-            var secret = new SigningCredentials(new SymmetricSecurityKey(encodedBytes), SecurityAlgorithms.HmacSha256);
-            return secret;
+            return null;
         }
 
-        private string GetToken(IUser user) 
+        private string GenerateToken(string user) 
         {
             var claims = GetClaims(user);
             var signature = GetSignature();
@@ -74,5 +72,37 @@ namespace Services {
 
             return token;
         }
-    }
+
+        private ClaimsIdentity GetClaims(string user) 
+        {
+            var claims = new[]
+            {
+                new Claim(JwtRegisteredClaimNames.Iss, "Syn"),
+                new Claim(JwtRegisteredClaimNames.Aud, "User"),
+                new Claim(JwtRegisteredClaimNames.Sub, "token subject"),
+                new Claim(JwtRegisteredClaimNames.Exp, DateTime.UtcNow.AddMonths(0).AddDays(0).AddHours(1).ToString()),
+                new Claim(JwtRegisteredClaimNames.Nbf, DateTime.UtcNow.ToString()),
+                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+                new Claim("user", user)
+            };
+
+            var payload = new ClaimsIdentity(claims);
+
+            return payload;
+        }
+
+        private SecurityKey GetKey(string secretKey)
+        {
+            var encodedBytes = Encoding.UTF8.GetBytes(secretKey);
+            var encodedSecret = Convert.ToBase64String(encodedBytes);
+            return new SymmetricSecurityKey(encodedBytes);
+        }
+        
+        private SigningCredentials GetSignature() 
+        {
+            var key = GetKey(_tokenSettings.Secret);
+            var secret = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+            return secret;
+        }
 }
+    }

@@ -3,6 +3,8 @@ using System.Collections.Generic;
 namespace Shared {
     public interface ISecurityTokenService
     {
-        string GenerateToken(IUser user);
+        string Generate(string user);
+
+        string Verify(string token);
     }
 }
