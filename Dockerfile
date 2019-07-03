@@ -9,7 +9,7 @@ RUN dotnet publish test/test.csproj -c Release
 # Build runtime image
 FROM mcr.microsoft.com/dotnet/core/aspnet:2.2 AS test
 WORKDIR /app
-COPY --from=build-test /app/test/bin/Release/netcoreapp2.2 .
+COPY --from=build-test /app/test/bin/Release/netcoreapp2.2/publish .
 RUN dotnet vstest test.dll
 ENTRYPOINT ["dotnet", "vstest test.dll"]
 
@@ -26,5 +26,5 @@ RUN dotnet publish -c Release -o out
 # Build runtime image
 FROM mcr.microsoft.com/dotnet/core/aspnet:2.2 AS prod
 WORKDIR /app
-COPY --from=build-prod /app/service/bin/Release/netcoreapp2.2 .
+COPY --from=build-prod /app/service/bin/Release/netcoreapp2.2/publish .
 ENTRYPOINT ["dotnet", "service.dll"]
