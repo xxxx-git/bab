@@ -90,7 +90,9 @@ namespace bab
         private IServiceCollection BabSettings(IServiceCollection container)
         {
             var settings = new Settings();
-            Configuration.Bind("Authorization", settings);
+            Configuration.Bind("JWTSettings:Header", settings.Headers);
+            Configuration.Bind("JWTSettings:Payload", settings.Claims);
+            Configuration.Bind("JWTSettings", settings);
             container.AddSingleton<ITokenSettings>(settings);
 
             return container;

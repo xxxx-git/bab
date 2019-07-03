@@ -22,11 +22,16 @@ namespace bab.Controllers
         [HttpPost("generate")]
         public IActionResult GenerateToken([FromBody]dynamic userParam)
         {
-            var token = _tokenService.Generate(userParam);
+            var stringifyUser = Newtonsoft.Json.JsonConvert.SerializeObject(userParam);
+            var token = _tokenService.Generate(stringifyUser);
 
             if (token == null)
                 return BadRequest(new { message = "Username or password is incorrect" });
-
+            
+            var options = new CookieOptions();
+            options.HttpOnly = true;
+            // options.Expires = DateTime.UtcNow.
+            HttpContext.Response.Cookies.Append("auth", token, options);
             return Ok(token);
         }
 
@@ -35,7 +40,8 @@ namespace bab.Controllers
         {
             var token = HttpContext.Request.Headers["Authorization"];
             var user = _tokenService.Verify(token);
-            return Ok(user);
+            var jsonUser = Newtonsoft.Json.JsonConvert.DeserializeObject(user);
+            return Ok(jsonUser);
         }
 
         [HttpGet("decode")]

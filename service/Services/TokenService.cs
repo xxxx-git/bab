@@ -29,7 +29,7 @@ namespace Services {
             var validationParameters = new TokenValidationParameters 
             {
                 ValidateIssuerSigningKey = true,
-                IssuerSigningKey = GetKey(_tokenSettings.Secret),
+                IssuerSigningKey = GetKey(),
                 ValidateAudience = false,
                 ValidateIssuer = false
             };
@@ -39,7 +39,7 @@ namespace Services {
             var claims = principal.Claims.ToDictionary(
                 claim => claim.Type);
             
-            var user = claims["user"].Value;
+            var user = claims[_tokenSettings.Claims.User].Value;
 
             return user;
         }
@@ -56,9 +56,8 @@ namespace Services {
              
             var tokenDescriptor = new SecurityTokenDescriptor()
             {
-                // EncryptingCredentials = new EncryptingCredentials(secret.Key, SecurityAlgorithms.HmacSha256, SecurityAlgorithms.RsaSha256),
                 SigningCredentials = signature,
-                Subject = claims,
+                Subject = claims
             };
 
             // Handle token descriptor by JWT
@@ -77,13 +76,18 @@ namespace Services {
         {
             var claims = new[]
             {
-                new Claim(JwtRegisteredClaimNames.Iss, "Syn"),
-                new Claim(JwtRegisteredClaimNames.Aud, "User"),
-                new Claim(JwtRegisteredClaimNames.Sub, "token subject"),
-                new Claim(JwtRegisteredClaimNames.Exp, DateTime.UtcNow.AddMonths(0).AddDays(0).AddHours(1).ToString()),
+                new Claim(JwtRegisteredClaimNames.Iss, _tokenSettings.Claims.Issuer),
+                new Claim(JwtRegisteredClaimNames.Aud, _tokenSettings.Claims.Audience),
+                new Claim(JwtRegisteredClaimNames.Sub, _tokenSettings.Claims.Subject),
+                new Claim(JwtRegisteredClaimNames.Exp, 
+                    DateTime.UtcNow
+                    .AddMonths(_tokenSettings.Claims.Expires.Months)
+                    .AddDays(_tokenSettings.Claims.Expires.Days)
+                    .AddHours(_tokenSettings.Claims.Expires.Hours)
+                    .ToString()),
                 new Claim(JwtRegisteredClaimNames.Nbf, DateTime.UtcNow.ToString()),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-                new Claim("user", user)
+                new Claim(_tokenSettings.Claims.User, user)
             };
 
             var payload = new ClaimsIdentity(claims);
@@ -91,17 +95,19 @@ namespace Services {
             return payload;
         }
 
-        private SecurityKey GetKey(string secretKey)
+        private SecurityKey GetKey()
         {
-            var encodedBytes = Encoding.UTF8.GetBytes(secretKey);
-            var encodedSecret = Convert.ToBase64String(encodedBytes);
-            return new SymmetricSecurityKey(encodedBytes);
+            var secret = _tokenSettings.Secret;
+            var bytes = Encoding.UTF8.GetBytes(secret);
+            // var encodedSecret = Convert.ToBase64String(bytes);
+            return new SymmetricSecurityKey(bytes);
         }
         
         private SigningCredentials GetSignature() 
         {
-            var key = GetKey(_tokenSettings.Secret);
-            var secret = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+            var key = GetKey();
+            //SecurityAlgorithms.HmacSha256
+            var secret = new SigningCredentials(key, _tokenSettings.Headers.Algorithm);
             return secret;
         }
 }
