@@ -10,17 +10,14 @@ RUN dotnet restore
 # Copy everything else and build
 COPY service/. ./service/
 COPY test/. ./test/
-RUN dotnet publish -c Release -o out
+RUN dotnet publish test/test.csproj -c Release -o out
 
 # Build runtime image
 FROM mcr.microsoft.com/dotnet/core/aspnet:2.2 AS test
 WORKDIR /app
 COPY --from=build-test /app/test/out .
-COPY --from=build-test /app/service/out .
-RUN dotnet service.dll
 RUN dotnet vstest test.dll
 ENTRYPOINT ["dotnet", "vstest test.dll"]
-
 
 
 
