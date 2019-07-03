@@ -1,4 +1,4 @@
-FROM mcr.microsoft.com/dotnet/core/runtime:2.2 AS build-test
+FROM mcr.microsoft.com/dotnet/core/sdk:2.2 AS build-test
 WORKDIR /app
 
 # Copy everything else and build
@@ -16,7 +16,7 @@ ENTRYPOINT ["dotnet", "vstest test.dll"]
 
 
 
-FROM mcr.microsoft.com/dotnet/core/runtime:2.2 AS build-prod
+FROM mcr.microsoft.com/dotnet/core/sdk:2.2 AS build-prod
 WORKDIR /app
 
 # Copy everything else and build
