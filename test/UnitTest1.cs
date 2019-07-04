@@ -17,7 +17,7 @@ namespace bab_test
             var controller = new ValuesController();
             
             var values = controller.Get();
-            Assert.Equal(values.Value, new string[] { "value1", "value2"});
+            Assert.Equal(values.Value, new string[] { "value11", "value2"});
         }
     }
 }
