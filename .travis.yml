@@ -8,6 +8,8 @@ services:
 script:
   - dotnet build
   - dotnet test
+
+after_success:
   - docker build --target prod -t bab .
   - docker run -d -p 127.0.0.1:80:4000 --name bab bab
   - docker ps | grep -i bab
