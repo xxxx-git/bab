@@ -1,16 +1,16 @@
 dist: xenial
-language: generic
+language: csharp
+mono: none
+dotnet: 2.2
 services:
   - docker
 jobs:
   include:
     - stage: test
       install:
-      - docker build --target test -t bab-test .
+      - dotnet build
       script:
-      - docker run --rm bab-test .
+      - dotnet test
     - stage: deploy
-      install:
-      - docker build --target prod -t bab .
       script:
-      - docker run --rm bab .
+      - docker build --target prod -t bab .
