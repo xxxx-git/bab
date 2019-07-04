@@ -4,13 +4,11 @@ mono: none
 dotnet: 2.2
 services:
   - docker
-jobs:
-  include:
-    - stage: test
-      install:
-      - dotnet build
-      script:
-      - dotnet test
-    - stage: deploy
-      script:
-      - docker build --target prod -t bab .
+
+script:
+  - dotnet build
+  - dotnet test
+  - docker build --target prod -t bab .
+  - docker run -d -p 127.0.0.1:80:4000 --name bab bab
+  - docker ps | grep -i bab
+ 
