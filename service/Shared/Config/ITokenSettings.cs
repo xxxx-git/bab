@@ -3,6 +3,7 @@ namespace Shared.Config {
         string Secret { get; set; }
         IHeaderSettings Headers { get; set; }
         IClaimSettings Claims { get; set;}
+        ITokenHttpSettings Http {get;set;}
     }
 
     public interface IHeaderSettings {
@@ -15,7 +16,7 @@ namespace Shared.Config {
         string Audience { get; set; }
         string Subject { get; set; }
         IExpiresClaimSettings Expires { get; set; }
-        string User { get; set; }
+        string Content { get; set; }
     }
 
     public interface IExpiresClaimSettings {

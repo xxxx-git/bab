@@ -6,6 +6,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using Shared;
+using Shared.Config;
+using Microsoft.AspNetCore.Cors;
 
 namespace bab.Controllers
 {
@@ -14,41 +16,41 @@ namespace bab.Controllers
     public class TokenController : ControllerBase
     {
         private ISecurityTokenService _tokenService;
-        public TokenController(ISecurityTokenService tokenService)
+        private IJsonCovnertService _jsonService;
+        private ITokenHttpSettings _tokenHttpSettings;
+        public TokenController(ISecurityTokenService tokenService,
+            IJsonCovnertService jsonService, ITokenHttpSettings tokenHttpSettings
+            )
         {
             _tokenService = tokenService;
+            _jsonService = jsonService;
+            _tokenHttpSettings = tokenHttpSettings;
         }
 
+        [EnableCors("AllowCorsPolicy")]
         [HttpPost("generate")]
-        public IActionResult GenerateToken([FromBody]dynamic userParam)
+        public IActionResult GenerateToken([FromBody]dynamic json)
         {
-            var stringifyUser = Newtonsoft.Json.JsonConvert.SerializeObject(userParam);
-            var token = _tokenService.Generate(stringifyUser);
+            var stringifyContent = _jsonService.Serialize(json);
+            var token = _tokenService.Generate(stringifyContent);
 
             if (token == null)
-                return BadRequest(new { message = "Username or password is incorrect" });
+                return BadRequest(new { message = "Could not generate token with given content" });
             
             var options = new CookieOptions();
-            options.HttpOnly = true;
-            // options.Expires = DateTime.UtcNow.
-            HttpContext.Response.Cookies.Append("auth", token, options);
+            options.HttpOnly = _tokenHttpSettings.HttpOnlyAccessCookie;
+            HttpContext.Response.Cookies.Append(_tokenHttpSettings.Cookie, token, options);
             return Ok(token);
         }
 
+        [EnableCors("AllowCorsPolicy")]
         [HttpGet("verify")]
         public IActionResult Verify()
         {
-            var token = HttpContext.Request.Headers["Authorization"];
-            var user = _tokenService.Verify(token);
-            var jsonUser = Newtonsoft.Json.JsonConvert.DeserializeObject(user);
-            return Ok(jsonUser);
-        }
-
-        [HttpGet("decode")]
-        public IActionResult value()
-        {
-            var y = HttpContext.Request;
-            return Ok("pdony");
+            var token = HttpContext.Request.Headers[_tokenHttpSettings.Header];
+            var stringfyContent = _tokenService.Verify(token);
+            var content = _jsonService.Deserialize(stringfyContent);
+            return Ok(content);
         }
     }
 }
