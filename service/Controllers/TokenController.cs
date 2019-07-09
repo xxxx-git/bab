@@ -47,7 +47,7 @@ namespace bab.Controllers
         [HttpGet("verify")]
         public IActionResult Verify()
         {
-            var token = HttpContext.Request.Headers[_tokenHttpSettings.Header];
+            var token = HttpContext.Request.Cookies[_tokenHttpSettings.Header];
             var stringfyContent = _tokenService.Verify(token);
             var content = _jsonService.Deserialize(stringfyContent);
             return Ok(content);

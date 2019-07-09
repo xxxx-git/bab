@@ -2,11 +2,11 @@ if(window.fetch) {
     let token;
 
     (async () => {
-        token = await getToken();
+        const token = await getToken();
         console.log(token);
+        const user = await getUser();
     })();
 
-    console.log(token);
 }
 
 async function getToken() {
@@ -22,6 +22,20 @@ async function getToken() {
         credentials: 'include',
         
     }).then(res => res.text());
+
+    return token;
+}
+
+async function getUser() {
+    const headers = new Headers({
+    });
+    const token = await fetch("https://127.0.0.1:5001/api/token/verify", 
+    { 
+        mode: 'cors', 
+        method: "GET", 
+        credentials: 'include'
+        
+    }).then(res => res.json());
 
     return token;
 }
