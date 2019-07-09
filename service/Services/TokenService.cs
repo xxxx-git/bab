@@ -39,7 +39,7 @@ namespace Services {
             var claims = principal.Claims.ToDictionary(
                 claim => claim.Type);
             
-            var user = claims[_tokenSettings.Claims.User].Value;
+            var user = claims[_tokenSettings.Claims.Content].Value;
 
             return user;
         }
@@ -87,7 +87,7 @@ namespace Services {
                     .ToString()),
                 new Claim(JwtRegisteredClaimNames.Nbf, DateTime.UtcNow.ToString()),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-                new Claim(_tokenSettings.Claims.User, user)
+                new Claim(_tokenSettings.Claims.Content, user)
             };
 
             var payload = new ClaimsIdentity(claims);

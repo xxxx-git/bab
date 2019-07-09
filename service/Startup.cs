@@ -34,6 +34,15 @@ namespace bab
             BabServices(services);
             BabSettings(services);
             BabAuthentication(services);
+            services.AddCors(o => o.AddPolicy("AllowCorsPolicy", builder => {
+                
+                builder
+                .WithOrigins("http://127.0.0.1:5500")
+                .AllowAnyHeader()
+                .AllowAnyMethod()
+                .AllowCredentials()
+                .SetIsOriginAllowedToAllowWildcardSubdomains();
+            }));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -49,6 +58,7 @@ namespace bab
                 app.UseHsts();
             }
 
+            app.UseCors("AllowCorsPolicy");
             app.UseHttpsRedirection();
             app.UseMvc();
         }
@@ -82,7 +92,11 @@ namespace bab
 
         private IServiceCollection BabServices(IServiceCollection container) 
         {
+            // Scoped - Initial per session
             container.AddScoped<ISecurityTokenService, SynTokenService>();
+
+            // Transient - Initial per dependency
+            container.AddTransient<IJsonCovnertService, SynJsonConvertService>();
 
             return container;
         }
@@ -92,8 +106,10 @@ namespace bab
             var settings = new Settings();
             Configuration.Bind("JWTSettings:Header", settings.Headers);
             Configuration.Bind("JWTSettings:Payload", settings.Claims);
+            Configuration.Bind("JWTSettings:Http", settings.Http);
             Configuration.Bind("JWTSettings", settings);
             container.AddSingleton<ITokenSettings>(settings);
+            container.AddSingleton<ITokenHttpSettings>(settings.Http);
 
             return container;
         }
