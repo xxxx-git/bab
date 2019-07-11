@@ -5,7 +5,9 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
-using bab.Shared;
+using Shared;
+using Shared.Config;
+using Microsoft.AspNetCore.Cors;
 
 namespace bab.Controllers
 {
@@ -13,37 +15,42 @@ namespace bab.Controllers
     [Route("api/[controller]")]
     public class TokenController : ControllerBase
     {
-        private ITokenService _tokenService;
-        public TokenController(ITokenService tokenService)
+        private ISecurityTokenService _tokenService;
+        private IJsonCovnertService _jsonService;
+        private ITokenHttpSettings _tokenHttpSettings;
+        public TokenController(ISecurityTokenService tokenService,
+            IJsonCovnertService jsonService, ITokenHttpSettings tokenHttpSettings
+            )
         {
             _tokenService = tokenService;
+            _jsonService = jsonService;
+            _tokenHttpSettings = tokenHttpSettings;
         }
 
-        
-        [HttpPost("generateToken")]
-        public IActionResult GenerateToken([FromBody]AuthorizedUser userParam)
+        [EnableCors("AllowCorsPolicy")]
+        [HttpPost("generate")]
+        public IActionResult GenerateToken([FromBody]dynamic json)
         {
-            var user = _tokenService.GenerateToken(userParam);
+            var stringifyContent = _jsonService.Serialize(json);
+            var token = _tokenService.Generate(stringifyContent);
 
-            if (user == null)
-                return BadRequest(new { message = "Username or password is incorrect" });
-
-            return Ok(user);
+            if (token == null)
+                return BadRequest(new { message = "Could not generate token with given content" });
+            
+            var options = new CookieOptions();
+            options.HttpOnly = _tokenHttpSettings.HttpOnlyAccessCookie;
+            HttpContext.Response.Cookies.Append(_tokenHttpSettings.Cookie, token, options);
+            return Ok(token);
         }
 
-        // [HttpGet]
-        // public IActionResult GetAll()
-        // {
-        //     var users =  _userService.GetAll();
-        //     return Ok(users);
-        // }
-    }
-
-    public class AuthorizedUser : IUser
-    {
-        public string Id { get;set; }
-        public string DisplayName { get; set;  }
-        public string Hierarchy { get; set; }
-        public string Token { get; set; }
+        [EnableCors("AllowCorsPolicy")]
+        [HttpGet("verify")]
+        public IActionResult Verify()
+        {
+            var token = HttpContext.Request.Cookies[_tokenHttpSettings.Header];
+            var stringfyContent = _tokenService.Verify(token);
+            var content = _jsonService.Deserialize(stringfyContent);
+            return Ok(content);
+        }
     }
 }
