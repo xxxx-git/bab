@@ -4,7 +4,7 @@ if(window.fetch) {
     (async () => {
         const token = await getToken();
         console.log(token);
-        const user = await getUser();
+        const content = await getContent();
     })();
 
 }
@@ -21,12 +21,14 @@ async function getToken() {
         headers: headers,
         credentials: 'include',
         
-    }).then(res => res.text());
+    }).then(res => {
+        res.text();
+    });
 
     return token;
 }
 
-async function getUser() {
+async function getContent() {
     const headers = new Headers({
     });
     const token = await fetch("https://127.0.0.1:5001/api/token/verify", 
