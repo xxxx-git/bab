@@ -18,9 +18,9 @@ namespace Services {
             _tokenSettings = tokenSettings;
         }
 
-        public string Generate(string user)
+        public string Generate(string content)
         {
-            var token = GenerateToken(user);
+            var token = GenerateToken(content);
             return token;
         }
 
@@ -39,9 +39,9 @@ namespace Services {
             var claims = principal.Claims.ToDictionary(
                 claim => claim.Type);
             
-            var user = claims[_tokenSettings.Claims.Content].Value;
+            var content = claims[_tokenSettings.Claims.Content].Value;
 
-            return user;
+            return content;
         }
 
         private object ValidateToken(string token)
@@ -49,9 +49,9 @@ namespace Services {
             return null;
         }
 
-        private string GenerateToken(string user) 
+        private string GenerateToken(string content) 
         {
-            var claims = GetClaims(user);
+            var claims = GetClaims(content);
             var signature = GetSignature();
              
             var tokenDescriptor = new SecurityTokenDescriptor()
@@ -72,7 +72,7 @@ namespace Services {
             return token;
         }
 
-        private ClaimsIdentity GetClaims(string user) 
+        private ClaimsIdentity GetClaims(string content) 
         {
             var claims = new[]
             {
@@ -87,7 +87,7 @@ namespace Services {
                     .ToString()),
                 new Claim(JwtRegisteredClaimNames.Nbf, DateTime.UtcNow.ToString()),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-                new Claim(_tokenSettings.Claims.Content, user)
+                new Claim(_tokenSettings.Claims.Content, content)
             };
 
             var payload = new ClaimsIdentity(claims);

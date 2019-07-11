@@ -65,7 +65,7 @@ namespace bab
 
         private void BabAuthentication(IServiceCollection services) 
         {
-            // // services.AddIdentity<AuthorizedUser, >()
+            // // services.AddIdentity<, >()
             // services.AddAuthentication(auth => {
             //     auth.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
             //     auth.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
