@@ -1,9 +1,9 @@
 using Xunit;
 using bab.Controllers;
 
-namespace bab_test
+namespace test
 {
-    public class UnitTest1
+    public class UnitTestExample
     {
         [Fact]
         public void Test1()
