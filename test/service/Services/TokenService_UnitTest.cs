@@ -9,7 +9,10 @@ namespace test
 {
     public class TokenService_UnitTest
     {
-        private ITokenSettings _defaultSettings;
+        private readonly ITokenSettings _defaultSettings;
+        private readonly string _content, _validToken, _invalidToken;
+
+        private readonly SynTokenService _service;
 
         public TokenService_UnitTest() 
         {
@@ -36,19 +39,38 @@ namespace test
                     HttpOnlyAccessCookie = true
                 }
             };
+
+            _service = new SynTokenService(_defaultSettings);
+
+            _content = "content";
+
+            _validToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJ0ZXN0IiwiYXVkIjoidGVzdCIsInN1YiI6InRlc3QiLCJleHAiOjE1NjMxMTg0ODAsIm5iZiI6MTU2MzExNDg4MCwianRpIjoiZDhiZDg5NjYtMGQyZi00M2QzLTgwN2ItMjE2ZDVhYWIwYzg0IiwidGVzdCI6ImNvbnRlbnQiLCJpYXQiOjE1NjMxMTQ4ODB9.TPqXZR-L9GzPdybt5fwvlVqt9l0PhB6I98PNZugrDG4";
+            _invalidToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJ0ZXN0IiwiYXVkIjoidGVzdCIsInN1YiI6InRlc3QiLCJleHAiOjE1NjMxMTg0ODAsIm5iZiI6MTU2MzExNDg4MCwianRpIjoiZDhiZDg5NjYtMGQyZi00M2QzLTgwN2ItMjE2ZDVhYWIwYzg0IiwidGVzdCI6ImNvbnRlbnQiLCJpYXQiOjE1NjMxMTQ4ODB9.TPqXZR-L9GzPdybt5fwvlVqt9l0PhB6I98PNZug5555";
         }
 
         [Fact]
         public void Generate_ShouldGenerateValidJwtToken()
         {
-            var service = new SynTokenService(_defaultSettings);
+            var actualToken = _service.Generate(_content);
 
-            var token = service.Generate("content");
             var handler = new JwtSecurityTokenHandler();
-            var isValid = handler.CanReadToken(token);
+            Assert.Equal(handler.CanReadToken(actualToken), true);
+        }
 
-            Assert.Equal(isValid, true);
-            _defaultSettings.Claims.Issuer = null;
+        [Fact]
+        public void Verify_ShouldReturnContentOnValidToken()
+        {
+            string actualContent = _service.Verify(_validToken);
+
+            Assert.Equal(_content, actualContent);
+        }
+
+        [Fact]
+        public void Verify_ShouldFailOnInValidToken()
+        {
+            string actualContent = _service.Verify(_invalidToken);
+
+            Assert.Equal(null, actualContent);
         }
     }
 }
