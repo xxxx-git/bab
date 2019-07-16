@@ -26,7 +26,7 @@ namespace Services {
 
         public string Verify(string token)
         {
-            var validationParameters = new TokenValidationParameters 
+            var validationParameters = new TokenValidationParameters
             {
                 ValidateIssuerSigningKey = true,
                 IssuerSigningKey = GetKey(),
@@ -35,10 +35,19 @@ namespace Services {
             };
 
             var handler = new JwtSecurityTokenHandler();
-            var principal = handler.ValidateToken(token, validationParameters, out SecurityToken validatedToken);
+            ClaimsPrincipal principal;
+            try
+            {
+                 principal = handler.ValidateToken(token, validationParameters, out SecurityToken validatedToken);
+            }
+            catch (System.Exception)
+            {
+                return null;
+            }
+
             var claims = principal.Claims.ToDictionary(
                 claim => claim.Type);
-            
+
             var content = claims[_tokenSettings.Claims.Content].Value;
 
             return content;
@@ -49,11 +58,16 @@ namespace Services {
             return null;
         }
 
-        private string GenerateToken(string content) 
+        private string GenerateToken(string content)
         {
+            if(content == null) 
+            {
+                content = "";
+            }
+
             var claims = GetClaims(content);
             var signature = GetSignature();
-             
+
             var tokenDescriptor = new SecurityTokenDescriptor()
             {
                 SigningCredentials = signature,
@@ -72,14 +86,14 @@ namespace Services {
             return token;
         }
 
-        private ClaimsIdentity GetClaims(string content) 
+        private ClaimsIdentity GetClaims(string content)
         {
             var claims = new[]
             {
                 new Claim(JwtRegisteredClaimNames.Iss, _tokenSettings.Claims.Issuer),
                 new Claim(JwtRegisteredClaimNames.Aud, _tokenSettings.Claims.Audience),
                 new Claim(JwtRegisteredClaimNames.Sub, _tokenSettings.Claims.Subject),
-                new Claim(JwtRegisteredClaimNames.Exp, 
+                new Claim(JwtRegisteredClaimNames.Exp,
                     DateTime.UtcNow
                     .AddMonths(_tokenSettings.Claims.Expires.Months)
                     .AddDays(_tokenSettings.Claims.Expires.Days)
@@ -102,8 +116,8 @@ namespace Services {
             // var encodedSecret = Convert.ToBase64String(bytes);
             return new SymmetricSecurityKey(bytes);
         }
-        
-        private SigningCredentials GetSignature() 
+
+        private SigningCredentials GetSignature()
         {
             var key = GetKey();
             //SecurityAlgorithms.HmacSha256
