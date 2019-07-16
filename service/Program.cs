@@ -14,9 +14,9 @@ namespace bab
     {
         public static void Main(string[] args)
         {
-            var x = CreateWebHostBuilder(args);
-            var y = x.Build();
-            y.Run();
+            CreateWebHostBuilder(args)
+            .Build()
+            .Run();
         }
 
         public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
