@@ -60,6 +60,11 @@ namespace Services {
 
         private string GenerateToken(string content)
         {
+            if(content == null) 
+            {
+                content = "";
+            }
+
             var claims = GetClaims(content);
             var signature = GetSignature();
 

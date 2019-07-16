@@ -4,19 +4,13 @@ using System.IdentityModel.Tokens.Jwt;
 using bab;
 using Microsoft.IdentityModel.Tokens;
 using Shared.Config;
+using System.Collections.Generic;
 
 namespace test
 {
     public class TokenService_UnitTest
     {
-        private readonly ITokenSettings _defaultSettings;
-        private readonly string _content, _validToken, _invalidToken;
-
-        private readonly SynTokenService _service;
-
-        public TokenService_UnitTest() 
-        {
-            _defaultSettings = new Settings() {
+        private static ITokenSettings defaultSettings = new Settings() {
                 Headers = new HeaderSettings() {
                     Algorithm = SecurityAlgorithms.HmacSha256,
                     Type = "jwt"
@@ -39,38 +33,49 @@ namespace test
                     HttpOnlyAccessCookie = true
                 }
             };
+        private readonly SynTokenService _service;
 
-            _service = new SynTokenService(_defaultSettings);
-
-            _content = "content";
-
-            _validToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJ0ZXN0IiwiYXVkIjoidGVzdCIsInN1YiI6InRlc3QiLCJleHAiOjE1NjMxMTg0ODAsIm5iZiI6MTU2MzExNDg4MCwianRpIjoiZDhiZDg5NjYtMGQyZi00M2QzLTgwN2ItMjE2ZDVhYWIwYzg0IiwidGVzdCI6ImNvbnRlbnQiLCJpYXQiOjE1NjMxMTQ4ODB9.TPqXZR-L9GzPdybt5fwvlVqt9l0PhB6I98PNZugrDG4";
-            _invalidToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJ0ZXN0IiwiYXVkIjoidGVzdCIsInN1YiI6InRlc3QiLCJleHAiOjE1NjMxMTg0ODAsIm5iZiI6MTU2MzExNDg4MCwianRpIjoiZDhiZDg5NjYtMGQyZi00M2QzLTgwN2ItMjE2ZDVhYWIwYzg0IiwidGVzdCI6ImNvbnRlbnQiLCJpYXQiOjE1NjMxMTQ4ODB9.TPqXZR-L9GzPdybt5fwvlVqt9l0PhB6I98PNZug5555";
+        public TokenService_UnitTest() 
+        {
+            _service = new SynTokenService(defaultSettings);
         }
 
-        [Fact]
-        public void Generate_ShouldGenerateValidJwtToken()
+        [Theory]
+        [InlineData("content", true)]
+        [InlineData("", true)]
+        [InlineData(null, true)]
+        [InlineData("{\"content\":1}", true)]
+        public void Generate_ShouldGenerateValidJwtToken(string content, bool expected)
         {
-            var actualToken = _service.Generate(_content);
+            var actualToken = _service.Generate(content);
 
             var handler = new JwtSecurityTokenHandler();
-            Assert.Equal(handler.CanReadToken(actualToken), true);
+            Assert.Equal(handler.CanReadToken(actualToken), expected);
         }
 
-        [Fact]
-        public void Verify_ShouldReturnContentOnValidToken()
+        [Theory]
+        [MemberData(nameof(getVerifyTestInputs), parameters: "content")]
+        [MemberData(nameof(getVerifyTestInputs), parameters: "{\"content\": \"bla\"}")]
+        [InlineData("" ,null)]
+        [InlineData("bla",null)]
+        [InlineData("bla.bla.bla",null)]
+        [InlineData("...",null)]
+        [InlineData(null,null)]
+        public void Verify_ShouldReturnContentIfTokenValid(string token, string expected)
         {
-            string actualContent = _service.Verify(_validToken);
+            string actualContent = _service.Verify(token);
 
-            Assert.Equal(_content, actualContent);
+            Assert.Equal(expected, actualContent);
         }
 
-        [Fact]
-        public void Verify_ShouldFailOnInValidToken()
+        public static IEnumerable<object[]> getVerifyTestInputs(string content)
         {
-            string actualContent = _service.Verify(_invalidToken);
-
-            Assert.Equal(null, actualContent);
+            SynTokenService service = new SynTokenService(defaultSettings);
+            var allTestInputs =  new List<object[]>
+            {
+                new object [] {service.Generate(content), content},
+            };
+            return allTestInputs;
         }
     }
 }
