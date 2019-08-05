@@ -18,6 +18,7 @@ namespace test
         private readonly TokenController _tokenController;
         private readonly string FAKE_PAYLOD_AS_STR = "{ \"Key\": \"Value\"}";
         private readonly string FAKE_TOKEN = "1234faketoken5678";
+        private readonly string COOKIE_HEADER = "Authorization";
         
         public TokenController_UnitTest() 
         {
@@ -36,9 +37,9 @@ namespace test
 
             var mockTokenHttpSettings = new Mock<ITokenHttpSettings>();
             mockTokenHttpSettings.SetupSet(m => m.Header =  It.IsAny<string>());
-            mockTokenHttpSettings.SetupGet(m => m.Header).Returns("Authorization");
+            mockTokenHttpSettings.SetupGet(m => m.Header).Returns(COOKIE_HEADER);
             mockTokenHttpSettings.SetupSet(m => m.Cookie =  It.IsAny<string>());
-            mockTokenHttpSettings.SetupGet(m => m.Cookie).Returns("Authorization");
+            mockTokenHttpSettings.SetupGet(m => m.Cookie).Returns(COOKIE_HEADER);
             mockTokenHttpSettings.SetupSet(m => m.HttpOnlyAccessCookie =  It.IsAny<bool>());
             mockTokenHttpSettings.SetupGet(m => m.HttpOnlyAccessCookie).Returns(true);
 
@@ -50,24 +51,20 @@ namespace test
         {
             //Arrange
             var json = FAKE_PAYLOD_AS_STR;
-            // var bytes = System.Text.Encoding.UTF8.GetBytes(json.ToCharArray());
-            // var stream = new MemoryStream(bytes);
-
             var mockHttpContext = new Mock<HttpContext>();
-            // mockHttpContext.Setup(m => m.Request.Body).Returns(stream);
-            // mockHttpContext.Setup(m => m.Request.ContentType).Returns("application/json");
-            mockHttpContext.Setup(m => m.Response.Cookies.Append(It.IsAny<string>(), It.IsAny<string>()));
-           
+            mockHttpContext.Setup(m => m.Response.Cookies.Append(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CookieOptions>()));
             _tokenController.ControllerContext =  new ControllerContext {
                 HttpContext = mockHttpContext.Object
             };
             
             // Act
-            var actualResponse = _tokenController.GenerateToken(json);
-
+            IActionResult actualResponse = _tokenController.GenerateToken(json);
+            var x=  _tokenController.Response.Headers;
+            
             // Assert
             Assert.IsType<OkObjectResult>(actualResponse);
             Assert.Equal(FAKE_TOKEN, (actualResponse as OkObjectResult).Value);
+            mockHttpContext.Verify(m => m.Response.Cookies.Append(It.Is<string>(s => s == COOKIE_HEADER), It.IsNotNull<string>(), It.IsAny<CookieOptions>()));
         }
 
         [Fact]
