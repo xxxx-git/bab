@@ -19,8 +19,7 @@ namespace bab.Controllers
         private IJsonCovnertService _jsonService;
         private ITokenHttpSettings _tokenHttpSettings;
         public TokenController(ISecurityTokenService tokenService,
-            IJsonCovnertService jsonService, ITokenHttpSettings tokenHttpSettings
-            )
+            IJsonCovnertService jsonService, ITokenHttpSettings tokenHttpSettings)
         {
             _tokenService = tokenService;
             _jsonService = jsonService;
